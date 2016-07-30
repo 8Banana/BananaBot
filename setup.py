@@ -5,7 +5,7 @@ from bananabot import __version__
 
 setuptools.setup(
     name="bananabot",
-    version=__vrsion__,
+    version=__version__,
     description="A very simple Python IRC bot",
     url="https://github.com/8Banana/BananaBot",
     author="8Banana",
