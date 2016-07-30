@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The base of the project, also includes some helper functions."""
 
-__all__ = ["BananaBot"]
+__all__ = ("BananaBot",)
 
 
 ACTION_FORMAT = "\x01ACTION {0}\x01"
