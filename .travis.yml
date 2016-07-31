@@ -9,7 +9,7 @@ python:
 install:
     - "pip install ."
     - "pip install flake8 flake8-docstrings"
-    - "Pip install yamllint"
+    - "pip install yamllint"
     - "pip install -r requirements.txt"
 script:
     - "python tests/bananabot_test.py"
