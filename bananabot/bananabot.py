@@ -69,7 +69,7 @@ class BananaBot:
 
     def send_privmsg(self, recipient, text):
         """Send a private message to a channel or an user."""
-        pass
+        return self._send("PRIVMSG {} :{}".format(recipient, text))
 
     def send_action(self, recipient, act):
         """Send an action to a channel or an user."""
