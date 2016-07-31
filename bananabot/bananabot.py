@@ -60,12 +60,13 @@ class BananaBot:
         self._linebuffer = collections.deque()
         self._dangling = ""
 
-    def _send(self, text):
-        if isinstance(text, str):
-            text = text.encode("utf-8")
-        if not text.endswith(b"\r\n"):
-            text += b"\r\n"
-        return self._socket.sendall(text)
+    def _send(self, msg):
+        try:
+            msg = msg.encode("utf-8")
+        except AttributeError:
+            pass
+        msg += b"\r\n"
+        self._socket.sendall(msg)
 
     def send_privmsg(self, recipient, text):
         """Send a private message to a channel or an user."""
