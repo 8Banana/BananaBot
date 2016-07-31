@@ -65,9 +65,8 @@ class BananaBot:
             msg = msg.encode("utf-8")
         except AttributeError:
             pass
-        else:
-            msg += b"\r\n"
-            self._socket.sendall(msg)
+        msg += b"\r\n"
+        self._socket.sendall(msg)
 
     def send_privmsg(self, recipient, text):
         """Send a private message to a channel or an user."""
