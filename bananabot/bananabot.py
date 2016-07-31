@@ -58,6 +58,7 @@ class BananaBot:
         self.config = config
         self._socket = socket.socket()
         self._linebuffer = collections.deque()
+        self._dangling = ""
 
     def _send(self, text):
         if isinstance(text, str):
@@ -76,11 +77,13 @@ class BananaBot:
 
     def _recv_message(self):
         if not self._linebuffer:
-            buf = b""
-            while not buf.endswith(b"\r\n"):
-                buf += self._socket.recv(4096)
-            rough = buf.decode("utf-8").split("\r\n")
-            self._linebuffer.extend(i for i in rough if i)
+            buf = self._socket.recv(4096)
+            if self._dangling:
+                buf = self._dangling + buf
+                self._dangling = ""
+            lines = buf.decode("utf-8").split("\r\n")
+            self._dangling += lines.pop()
+            self._linebuffer.extend(lines)
         return _parse_server_message(self._linebuffer.popleft())
 
     def _connect(self):
