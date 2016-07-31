@@ -3,6 +3,7 @@
 import argparse
 
 import bananabot
+import yaml
 
 
 def main():

@@ -1,7 +1,6 @@
 language: python
 python:
     - "2.7"
-    - "3.2"
     - "3.3"
     - "3.4"
     - "3.5"
@@ -9,7 +8,7 @@ python:
 install:
     - "pip install ."
     - "pip install flake8 flake8-docstrings"
-    - "Pip install yamllint"
+    - "pip install yamllint"
     - "pip install -r requirements.txt"
 script:
     - "python tests/bananabot_test.py"
