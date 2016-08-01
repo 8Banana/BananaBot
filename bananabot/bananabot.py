@@ -1,71 +1,16 @@
 #!/usr/bin/env python3
 """The base of the project, also includes some helper functions."""
 import collections
-import re
 import socket
 
 from . import commands
+from .parsing import (parse_server_message,
+                      parse_privmsg, parse_join, parse_part)
 
 __all__ = ("BananaBot",)
 
 
 ACTION_FORMAT = "\x01ACTION {0}\x01"
-USER_REGEXP = re.compile(
-    r"^(?P<nick>.*?)!(?P<user>.*?)@(?P<host>.*?)$"
-)
-
-User = collections.namedtuple("User", ("nick", "username", "hostname"))
-Server = collections.namedtuple("Server", ("hostname",))
-ServerMessage = collections.namedtuple("ServerMessage",
-                                       ("sender", "command", "args"))
-
-# These are used just for the command handlers.
-PrivmsgMessage = collections.namedtuple("PrivmsgMessage",
-                                        ("sender", "recipient", "text"))
-JoinMessage = collections.namedtuple("JoinMessage", ("sender",))
-PartMessage = collections.namedtuple("PartMessage", ("sender",))
-
-
-def _parse_server_message(msg):
-    """Parse a server message line and turn it into a ServerMessage tuple."""
-    # Watch out, MSG is bad for you!
-    # ASSUMPTION: The message has the sender information.
-    sender_info, msg = msg[1:].split(" ", 1)
-    if "!" in sender_info:
-        match = USER_REGEXP.match(sender_info)
-        assert match is not None
-        sender = User(match.group("nick"),
-                      match.group("user"),
-                      match.group("host"))
-    else:
-        sender = Server(sender_info,)
-    args = msg.split(" ")
-    command = args.pop(0)
-    for n, i in enumerate(args[:]):
-        if i.startswith(":"):
-            temp = args[n:]
-            args = args[:n]
-            args.append(" ".join(temp)[1:])
-            break
-    return ServerMessage(sender, command, args)
-
-
-def _parse_privmsg(msg):
-    if isinstance(msg, str):
-        msg = _parse_server_message(msg)
-    return PrivmsgMessage(msg.sender, msg.args[0], msg.args[1])
-
-
-def _parse_join(msg):
-    if isinstance(msg, str):
-        msg = _parse_server_message(msg)
-    return JoinMessage(msg.sender)
-
-
-def _parse_part(msg):
-    if isinstance(msg, str):
-        msg = _parse_server_message(msg)
-    return PartMessage(msg.sender)
 
 
 class BananaBot:
@@ -118,7 +63,7 @@ class BananaBot:
             # seeing as we'd have to encode/decode it at some point anyways.
             self._dangling += lines.pop().encode("utf-8")
             self._linebuffer.extend(lines)
-        return _parse_server_message(self._linebuffer.popleft())
+        return parse_server_message(self._linebuffer.popleft())
 
     def _connect(self):
         self._socket.connect((self.config["host"], self.config["port"]))
@@ -138,14 +83,14 @@ class BananaBot:
             if msg.command == "PING":
                 self._send("PONG {}".format(" ".join(msg.args)))
             elif msg.command == "PRIVMSG":
-                privmsg = _parse_privmsg(msg)
+                privmsg = parse_privmsg(msg)
                 for handler in commands.handlers["privmsg"]:
                     handler(privmsg)
             elif msg.command == "JOIN":
-                join = _parse_join(msg)
+                join = parse_join(msg)
                 for handler in commands.handlers["join"]:
                     handler(join)
             elif msg.command == "PART":
-                part = _parse_part(msg)
+                part = parse_part(msg)
                 for handler in commands.handlers["part"]:
                     handler(part)

@@ -2,8 +2,9 @@
 # flake8: noqa
 import argparse
 
-import bananabot
 import yaml
+
+import bananabot
 
 
 def main():
