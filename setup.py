@@ -9,6 +9,6 @@ setuptools.setup(
     description="A very simple Python IRC bot",
     url="https://github.com/8Banana/BananaBot",
     author="8Banana",
-    install_requires=[],
+    install_requires=["PyYAML>=3.11"],
     packages=["bananabot"]
 )
