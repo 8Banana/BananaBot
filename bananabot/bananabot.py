@@ -4,6 +4,8 @@ import collections
 import re
 import socket
 
+from . import commands
+
 __all__ = ("BananaBot",)
 
 
@@ -17,8 +19,15 @@ Server = collections.namedtuple("Server", ("hostname",))
 ServerMessage = collections.namedtuple("ServerMessage",
                                        ("sender", "command", "args"))
 
+# These are used just for the command handlers.
+PrivmsgMessage = collections.namedtuple("PrivmsgMessage",
+                                        ("sender", "recipient", "text"))
+JoinMessage = collections.namedtuple("JoinMessage", ("sender",))
+PartMessage = collections.namedtuple("PartMessage", ("sender",))
+
 
 def _parse_server_message(msg):
+    """Parse a server message line and turn it into a ServerMessage tuple."""
     # Watch out, MSG is bad for you!
     # ASSUMPTION: The message has the sender information.
     sender_info, msg = msg[1:].split(" ", 1)
@@ -39,6 +48,24 @@ def _parse_server_message(msg):
             args.append(" ".join(temp)[1:])
             break
     return ServerMessage(sender, command, args)
+
+
+def _parse_privmsg(msg):
+    if isinstance(msg, str):
+        msg = _parse_server_message(msg)
+    return PrivmsgMessage(msg.sender, msg.args[0], msg.args[1])
+
+
+def _parse_join(msg):
+    if isinstance(msg, str):
+        msg = _parse_server_message(msg)
+    return JoinMessage(msg.sender)
+
+
+def _parse_part(msg):
+    if isinstance(msg, str):
+        msg = _parse_server_message(msg)
+    return PartMessage(msg.sender)
 
 
 class BananaBot:
@@ -110,3 +137,15 @@ class BananaBot:
             msg = self._recv_message()
             if msg.command == "PING":
                 self._send("PONG {}".format(" ".join(msg.args)))
+            elif msg.command == "PRIVMSG":
+                privmsg = _parse_privmsg(msg)
+                for handler in commands.handlers["privmsg"]:
+                    handler(privmsg)
+            elif msg.command == "JOIN":
+                join = _parse_join(msg)
+                for handler in commands.handlers["join"]:
+                    handler(join)
+            elif msg.command == "PART":
+                part = _parse_part(msg)
+                for handler in commands.handlers["part"]:
+                    handler(part)

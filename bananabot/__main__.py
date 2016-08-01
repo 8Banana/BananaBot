@@ -12,7 +12,10 @@ def main():
                       help="The relative path to your config file.")
     argv = argp.parse_args()
     with open(argv.configfile) as config_fobj:
-        bananabot.BananaBot(yaml.load(config_fobj)).mainloop()
+        try:
+            bananabot.BananaBot(yaml.load(config_fobj)).mainloop()
+        except KeyboardInterrupt:
+            pass
 
 if __name__ == "__main__":
     main()
