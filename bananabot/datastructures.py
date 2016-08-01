@@ -19,3 +19,6 @@ PrivmsgMessage = collections.namedtuple("PrivmsgMessage",
                                         ("sender", "recipient", "text"))
 JoinMessage = collections.namedtuple("JoinMessage", ("sender",))
 PartMessage = collections.namedtuple("PartMessage", ("sender",))
+CommandMessage = collections.namedtuple("Command", ("sender", "recipient",
+                                                    "command", "args",
+                                                    "arg_text"))
