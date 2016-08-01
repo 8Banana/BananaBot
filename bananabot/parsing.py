@@ -41,31 +41,21 @@ def parse_server_message(msg):
 
 def parse_privmsg(msg):
     """Parse a ServerMessage representing a PRIVMSG."""
-    if isinstance(msg, str):
-        msg = parse_server_message(msg)
     return PrivmsgMessage(msg.sender, msg.args[0], msg.args[1])
 
 
 def parse_join(msg):
     """Parse a ServerMessage representing a JOIN."""
-    if isinstance(msg, str):
-        msg = parse_server_message(msg)
     return JoinMessage(msg.sender)
 
 
 def parse_part(msg):
     """Parse a ServerMessage representing a PART."""
-    if isinstance(msg, str):
-        msg = parse_server_message(msg)
     return PartMessage(msg.sender)
 
 
 def parse_command(msg):
     """Parse a PrivmsgMessage representing a command."""
-    if isinstance(msg, str):
-        msg = parse_privmsg(parse_server_message(msg))
-    elif isinstance(msg, ServerMessage):
-        msg = parse_privmsg(msg)
     command_parts = msg.text.split(" ", 1)
     if len(command_parts) > 1:
         arg_text = command_parts.pop()
