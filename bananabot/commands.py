@@ -6,5 +6,5 @@ handlers = {
     "join": [],
     "part": [],
     "privmsg": [],
-    "command": {"echo": lambda b, c: b.send_privmsg(c.recipient, c.arg_text)},
+    "command": {"!echo": lambda b, c: b.send_privmsg(c.recipient, c.arg_text)},
 }
