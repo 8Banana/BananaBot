@@ -61,12 +61,20 @@ def parse_part(msg):
 
 
 def parse_command(msg):
+    """Parse a PrivmsgMessage representing a command."""
     if isinstance(msg, str):
         msg = parse_privmsg(parse_server_message(msg))
     elif isinstance(msg, ServerMessage):
         msg = parse_privmsg(msg)
-    if msg.text.startswith(_COMMAND_START):
-        command, arg_text = msg.text[1:].split(" ", 1)
-        return CommandMessage(msg.sender, command, arg_text.split(), arg_text)
+    if msg.text.startswith(_COMMAND_START) and msg.text != _COMMAND_START:
+        command_parts = msg.text[1:].split(" ", 1)
+        if len(command_parts) > 1:
+            arg_text = command_parts.pop()
+        else:
+            arg_text = ""
+        command = command_parts.pop()
+        assert not command_parts
+        return CommandMessage(msg.sender, msg.recipient,
+                              command, arg_text.split(), arg_text)
     else:
         return None
