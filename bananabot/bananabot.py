@@ -58,7 +58,7 @@ class BananaBot:
         self.config = config
         self._socket = socket.socket()
         self._linebuffer = collections.deque()
-        self._dangling = ""
+        self._dangling = b""
 
     def _send(self, msg):
         try:
@@ -76,14 +76,20 @@ class BananaBot:
         """Send an action to a channel or an user."""
         return self.send_privmsg(recipient, ACTION_FORMAT.format(act))
 
+    def join_channel(self, channel):
+        """Join an IRC channel."""
+        self._send("JOIN {}".format(channel))
+
     def _recv_message(self):
         if not self._linebuffer:
             buf = self._socket.recv(4096)
             if self._dangling:
                 buf = self._dangling + buf
-                self._dangling = ""
+                self._dangling = b""
             lines = buf.decode("utf-8").split("\r\n")
-            self._dangling += lines.pop()
+            # We re-encode the line here just so we can keep it in bytes,
+            # seeing as we'd have to encode/decode it at some point anyways.
+            self._dangling += lines.pop().encode("utf-8")
             self._linebuffer.extend(lines)
         return _parse_server_message(self._linebuffer.popleft())
 
@@ -98,6 +104,8 @@ class BananaBot:
         """Run the bot until the heat death of the universe."""
         self._connect()
         self._identify()
+        for channel in self.config["channels"]:
+            self.join_channel(channel)
         while True:
             msg = self._recv_message()
             if msg.command == "PING":
