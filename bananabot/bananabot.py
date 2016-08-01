@@ -5,7 +5,7 @@ import socket
 
 from . import commands
 from .parsing import (parse_server_message,
-                      parse_privmsg, parse_join, parse_part)
+                      parse_privmsg, parse_join, parse_part, parse_command)
 
 __all__ = ("BananaBot",)
 
@@ -86,6 +86,9 @@ class BananaBot:
                 privmsg = parse_privmsg(msg)
                 for handler in commands.handlers["privmsg"]:
                     handler(privmsg)
+                command = parse_command(privmsg)
+                for handler in commands.handlers["command"]:
+                    handler(command)
             elif msg.command == "JOIN":
                 join = parse_join(msg)
                 for handler in commands.handlers["join"]:

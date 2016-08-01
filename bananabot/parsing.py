@@ -2,13 +2,16 @@
 import re
 
 from .datastructures import (User, Server, ServerMessage,
-                             PrivmsgMessage, JoinMessage, PartMessage)
+                             PrivmsgMessage, JoinMessage, PartMessage,
+                             CommandMessage)
 
-__all__ = ("parse_server_message", "parse_privmsg", "parse_join", "parse_part")
+__all__ = ("parse_server_message",
+           "parse_privmsg", "parse_join", "parse_part", "parse_command")
 
-USER_REGEXP = re.compile(
+_USER_REGEXP = re.compile(
     r"^(?P<nick>.*?)!(?P<user>.*?)@(?P<host>.*?)$"
 )
+_COMMAND_START = "!"
 
 
 def parse_server_message(msg):
@@ -25,7 +28,7 @@ def parse_server_message(msg):
             args.append(" ".join(temp)[1:])
             break
     if "!" in sender_info:
-        match = USER_REGEXP.match(sender_info)
+        match = _USER_REGEXP.match(sender_info)
         assert match is not None
         user = User(match.group("nick"),
                     match.group("user"),
@@ -55,3 +58,15 @@ def parse_part(msg):
     if isinstance(msg, str):
         msg = parse_server_message(msg)
     return PartMessage(msg.sender)
+
+
+def parse_command(msg):
+    if isinstance(msg, str):
+        msg = parse_privmsg(parse_server_message(msg))
+    elif isinstance(msg, ServerMessage):
+        msg = parse_privmsg(msg)
+    if msg.text.startswith(_COMMAND_START):
+        command, arg_text = msg.text[1:].split(" ", 1)
+        return CommandMessage(msg.sender, command, arg_text.split(), arg_text)
+    else:
+        return None
