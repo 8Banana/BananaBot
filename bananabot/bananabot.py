@@ -53,7 +53,7 @@ class BananaBot:
         self._send("JOIN {}".format(channel))
 
     def _recv_message(self):
-        if not self._linebuffer:
+        while not self._linebuffer:
             buf = self._socket.recv(4096)
             if self._dangling:
                 buf = self._dangling + buf
