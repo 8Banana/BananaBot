@@ -3,6 +3,8 @@
 import collections
 import socket
 
+import plyvel
+
 from . import commands
 from .parsing import (parse_server_message,
                       parse_privmsg, parse_join, parse_part, parse_command)
@@ -28,9 +30,25 @@ class BananaBot:
             config(dict): The configuration file for the bot.
         """
         self.config = config
+        self._state_db = plyvel.DB(config.get("state_db", "bananabot.db"),
+                                     create_if_missing=True)
         self._socket = socket.socket()
         self._linebuffer = collections.deque()
         self._dangling = b""
+
+    def cleanup(self, quit_irc=True):
+        """
+        Clean up everything that needs to be cleaned up at exit.
+
+        WARNING: This does not close the socket.
+        """
+        self._state_db.close()
+        if quit_irc:
+            self._send("QUIT")
+
+    def create_state(self, name):
+        """Create a leveldb database with a given prefix."""
+        return self._state_db.prefixed_db(name + b"-")
 
     def _send(self, msg):
         try:
