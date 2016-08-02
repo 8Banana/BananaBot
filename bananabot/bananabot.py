@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """The base of the project, also includes some helper functions."""
 import collections
+import os
 import socket
+
+import yaml
 
 from . import commands
 from .parsing import (parse_server_message,
@@ -27,10 +30,29 @@ class BananaBot:
         Args:
             config(dict): The configuration file for the bot.
         """
+        state_filename = config.get("state_file", "bananabot.state.yaml")
         self.config = config
+        if os.path.exists(state_filename):
+            with open(state_filename) as state_fileobj:
+                self.state = yaml.load(state_fileobj)
+        else:
+            # The state file will be created once we exit.
+            self.state = {}
         self._socket = socket.socket()
         self._linebuffer = collections.deque()
         self._dangling = b""
+
+    def cleanup(self, quit_irc=True):
+        """
+        Clean up everything that needs to be cleaned up at exit.
+
+        WARNING: This does not close the socket.
+        """
+        state_filename = self.config.get("state_file", "bananabot.state.yaml")
+        with open(state_filename, "w") as state_fobj:
+            yaml.dump(self.state, state_fobj)
+        if quit_irc:
+            self._send("QUIT")
 
     def _send(self, msg):
         try:
