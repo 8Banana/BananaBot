@@ -5,6 +5,9 @@ python:
     - "3.4"
     - "3.5"
     - "nightly"
+before_install:
+    - "sudo apt-get -qq update"
+    - "sudo apt-get install -y libleveldb1 libleveldb-dev"
 install:
     - "pip install -r requirements.txt"
     - "pip install flake8 flake8-docstrings"
@@ -14,3 +17,5 @@ script:
     - "python tests/bananabot_test.py"
     - "python -m flake8 bananabot/"
     - "yamllint config.yaml"
+sudo: required
+dist: trusty
