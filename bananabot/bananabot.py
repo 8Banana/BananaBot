@@ -31,7 +31,7 @@ class BananaBot:
         """
         self.config = config
         self._state_db = plyvel.DB(config.get("state_db", "bananabot.db"),
-                                     create_if_missing=True)
+                                   create_if_missing=True)
         self._socket = socket.socket()
         self._linebuffer = collections.deque()
         self._dangling = b""
